@@ -1,280 +1,171 @@
-<%@ Page Language="C#" MasterPageFile="~/MasterPage.master" AutoEventWireup="true" CodeFile="GeometryInsp.aspx.cs" Inherits="GeometryInsp"
-    Title="Ввод геометрических параметров на инспекционных решетках " %>
-
-<%@ Register Src="SelectionTable.ascx" TagName="SelectionTable" TagPrefix="uc1" %>
-<%@ MasterType VirtualPath="~/MasterPage.master" %>
 
 
-<asp:Content ID="Content1" ContentPlaceHolderID="TitlePlaceHolder" runat="Server">
-    Ввод геометрических параметров на инспекционных решетках
-
-    <script language="javascript" type="text/javascript">
-
-        prefix = "ctl00_MainPlaceHolder_";
-
-        //удаление лишних пробелов в строке
-        function Trim(text) {
-            try {
-                while (text.slice(0, 1) == " ")
-                    text = text.slice(1, text.length);
-                while (text.slice(text.length - 1, text.length) == " ")
-                    text = text.slice(0, text.length - 1);
-                while (text.indexOf("  ") != -1)
-                    text = text.replace("  ", " ");
-            }
-            catch (error) { };
-            return (text);
-        }
-
-        //проверка, является ли строка числом
-        //параметр allowEmpty=true - разрешение ввода пустых строк
-        function IsNumber(text, allowEmpty) {
-            text = Trim(text);
-            if ((text == "") & (!allowEmpty)) return true;
-            if (text == "") return false;
-            return !(isNaN(Number(text)));
-        }
-
-        //функция валидации ввода номера
-        function fncClientValidation(source, arguments) {
-            arguments.Value = arguments.Value.replace(",", ".");
-            arguments.IsValid = IsNumber(arguments.Value, false);
-        }
-
-        //функция валидации ввода диаметров трубы
-        //с расчетом овальности по переднему концу
-        function ValidateNumberOvalPK(source, arguments) {
-            arguments.Value = arguments.Value.replace(",", ".");
-            arguments.IsValid = IsNumber(arguments.Value, false);
-
-            //пролучение значений
-            DiamPKpSH = GetEditValueFloat(document.getElementById(prefix + "txtDiamPKpSH"));
-            DiamPKpT = GetEditValueFloat(document.getElementById(prefix + "txtDiamPKpT"));
-        }
-
-        //с расчетом овальности по заднему концу
-        function ValidateNumberOvalZK(source, arguments) {
-            arguments.Value = arguments.Value.replace(",", ".");
-            arguments.IsValid = IsNumber(arguments.Value, false);
-
-            //пролучение значений
-            DiamZKpSH = GetEditValueFloat(document.getElementById(prefix + "txtDiamZKpSH"));
-            DiamZKpT = GetEditValueFloat(document.getElementById(prefix + "txtDiamZKpT"));
-        }
-
-        //с расчетом овальности по телу
-        function ValidateNumberOvalT(source, arguments) {
-            arguments.Value = arguments.Value.replace(",", ".");
-            arguments.IsValid = IsNumber(arguments.Value, false);
-
-            //пролучение значений
-            DiamTpSH = GetEditValueFloat(document.getElementById(prefix + "txtDiamTpSH"));
-            DiamTpT = GetEditValueFloat(document.getElementById(prefix + "txtDiamTpT"));
-        }
-
-        //Объедененная функция для проверки ввода данных
-        function fncSave(btn) {
-            if (CheckInputsGeometry() == true) PostBackByButton(btn);
-            return false;
-        }
-
-        //функция проверки правильности ввода всех данных формы поиска
-        //параметр allowEmpty=true - разрешать пустые поля
+        //ГґГіГ­ГЄГ¶ГЁГї ГЇГ°Г®ГўГҐГ°ГЄГЁ ГЇГ°Г ГўГЁГ«ГјГ­Г®Г±ГІГЁ ГўГўГ®Г¤Г  ГўГ±ГҐГµ Г¤Г Г­Г­Г»Гµ ГґГ®Г°Г¬Г» ГЇГ®ГЁГ±ГЄГ 
+        //ГЇГ Г°Г Г¬ГҐГІГ° allowEmpty=true - Г°Г Г§Г°ГҐГёГ ГІГј ГЇГіГ±ГІГ»ГҐ ГЇГ®Г«Гї
         function CheckFindInputs(allowEmpty) {
-            //удаление лишних пробелов в значениях 
+            //ГіГ¤Г Г«ГҐГ­ГЁГҐ Г«ГЁГёГ­ГЁГµ ГЇГ°Г®ГЎГҐГ«Г®Гў Гў Г§Г­Г Г·ГҐГ­ГЁГїГµ 
             Year = Trim(document.getElementById(prefix + "txbYear").value);
             PipeNumber = Trim(document.getElementById(prefix + "txbPipeNumber").value);
             Check = Trim(document.getElementById(prefix + "txbCheck").value);
 
-            //проверка критериев поиска - должны быть все параметры
+            //ГЇГ°Г®ГўГҐГ°ГЄГ  ГЄГ°ГЁГІГҐГ°ГЁГҐГў ГЇГ®ГЁГ±ГЄГ  - Г¤Г®Г«Г¦Г­Г» ГЎГ»ГІГј ГўГ±ГҐ ГЇГ Г°Г Г¬ГҐГІГ°Г»
             if ((Year == "") | (PipeNumber == "") | (Check == "")) {
-                alert("Для поиска трубы необходимо указать её номер и контрольную цифру");
+                alert("Г„Г«Гї ГЇГ®ГЁГ±ГЄГ  ГІГ°ГіГЎГ» Г­ГҐГ®ГЎГµГ®Г¤ГЁГ¬Г® ГіГЄГ Г§Г ГІГј ГҐВё Г­Г®Г¬ГҐГ° ГЁ ГЄГ®Г­ГІГ°Г®Г«ГјГ­ГіГѕ Г¶ГЁГґГ°Гі");
                 return false;
             }
 
-            //проверка корректности ввода данных
+            //ГЇГ°Г®ГўГҐГ°ГЄГ  ГЄГ®Г°Г°ГҐГЄГІГ­Г®Г±ГІГЁ ГўГўГ®Г¤Г  Г¤Г Г­Г­Г»Гµ
             msg = "";
             if (!IsNumber(Year, false))
-                msg = msg + "Неверно указано значение в поле \"Год\"\n";
+                msg = msg + "ГЌГҐГўГҐГ°Г­Г® ГіГЄГ Г§Г Г­Г® Г§Г­Г Г·ГҐГ­ГЁГҐ Гў ГЇГ®Г«ГҐ \"ГѓГ®Г¤\"\n";
             if (!IsNumber(PipeNumber, false))
-                msg = msg + "Неверно указано значение в поле \"№ Трубы\"\n";
+                msg = msg + "ГЌГҐГўГҐГ°Г­Г® ГіГЄГ Г§Г Г­Г® Г§Г­Г Г·ГҐГ­ГЁГҐ Гў ГЇГ®Г«ГҐ \"В№ Г’Г°ГіГЎГ»\"\n";
             if (!IsNumber(Check, false))
-                msg = msg + "Неверно указано значение в поле \"Контрольная цифра\"\n";
+                msg = msg + "ГЌГҐГўГҐГ°Г­Г® ГіГЄГ Г§Г Г­Г® Г§Г­Г Г·ГҐГ­ГЁГҐ Гў ГЇГ®Г«ГҐ \"ГЉГ®Г­ГІГ°Г®Г«ГјГ­Г Гї Г¶ГЁГґГ°Г \"\n";
             if (msg != "") {
-                alert(msg + "\nДля продолжения необходимо правильно указать перечисленные значения.");
+                alert(msg + "\nГ„Г«Гї ГЇГ°Г®Г¤Г®Г«Г¦ГҐГ­ГЁГї Г­ГҐГ®ГЎГµГ®Г¤ГЁГ¬Г® ГЇГ°Г ГўГЁГ«ГјГ­Г® ГіГЄГ Г§Г ГІГј ГЇГҐГ°ГҐГ·ГЁГ±Г«ГҐГ­Г­Г»ГҐ Г§Г­Г Г·ГҐГ­ГЁГї.");
                 return false;
             }
 
-            //проверка наличия ввода всех данных
+            //ГЇГ°Г®ГўГҐГ°ГЄГ  Г­Г Г«ГЁГ·ГЁГї ГўГўГ®Г¤Г  ГўГ±ГҐГµ Г¤Г Г­Г­Г»Гµ
             msg = "";
             if (!allowEmpty) {
                 if (Year == "")
-                    msg = msg + "Не указано значение в поле \"Годe\"\n";
+                    msg = msg + "ГЌГҐ ГіГЄГ Г§Г Г­Г® Г§Г­Г Г·ГҐГ­ГЁГҐ Гў ГЇГ®Г«ГҐ \"ГѓГ®Г¤e\"\n";
                 if (PipeNumber == "")
-                    msg = msg + "Не указано значение в поле \"№ Трубы\"\n";
+                    msg = msg + "ГЌГҐ ГіГЄГ Г§Г Г­Г® Г§Г­Г Г·ГҐГ­ГЁГҐ Гў ГЇГ®Г«ГҐ \"В№ Г’Г°ГіГЎГ»\"\n";
                 if (Check == "")
-                    msg = msg + "Не указано значение в поле \"Контрольная цифра\"\n";
+                    msg = msg + "ГЌГҐ ГіГЄГ Г§Г Г­Г® Г§Г­Г Г·ГҐГ­ГЁГҐ Гў ГЇГ®Г«ГҐ \"ГЉГ®Г­ГІГ°Г®Г«ГјГ­Г Гї Г¶ГЁГґГ°Г \"\n";
                 if (msg != "") {
-                    alert(msg + "\nДля продолжения необходимо правильно указать перечисленные значения.");
+                    alert(msg + "\nГ„Г«Гї ГЇГ°Г®Г¤Г®Г«Г¦ГҐГ­ГЁГї Г­ГҐГ®ГЎГµГ®Г¤ГЁГ¬Г® ГЇГ°Г ГўГЁГ«ГјГ­Г® ГіГЄГ Г§Г ГІГј ГЇГҐГ°ГҐГ·ГЁГ±Г«ГҐГ­Г­Г»ГҐ Г§Г­Г Г·ГҐГ­ГЁГї.");
                     return false;
                 }
             }
             return true;
         }
 
-        //функция проверки правильности ввода всех данных по геометрии
-        function CheckInputsGeometry() {
-            //пролучение значений
-
-            PartNum = GetEditValueInt(document.getElementById(prefix + "txtPartNumber"));
-            DiamPKpSH = GetEditValueFloat(document.getElementById(prefix + "txtDiamPKpSH"));
-            DiamPKpT = GetEditValueFloat(document.getElementById(prefix + "txtDiamPKpT"));
-            DiamTpSH = GetEditValueFloat(document.getElementById(prefix + "txtDiamTpSH"));
-            DiamTpT = GetEditValueFloat(document.getElementById(prefix + "txtDiamTpT"));
-            DiamZKpSH = GetEditValueFloat(document.getElementById(prefix + "txtDiamZKpSH"));
-            DiamZKpT = GetEditValueFloat(document.getElementById(prefix + "txtDiamZKpT"));
-            Dlina = GetEditValueFloat(document.getElementById(prefix + "txtDlina"));
-            KosinaPTor = GetEditValueFloat(document.getElementById(prefix + "txtKosinaPTor"));
-            KosinaZTor = GetEditValueFloat(document.getElementById(prefix + "txtKosinaZTor"));
-            Krivizna1mT = GetEditValueFloat(document.getElementById(prefix + "txtKrivizna1mT"));
-            KriviznaVciaT = GetEditValueFloat(document.getElementById(prefix + "txtKriviznaVciaT"));
-            OstatokVnutGrata = GetEditValueFloat(document.getElementById(prefix + "txtOstatokVnutGrata"));
-            OstatokNarujGrata = GetEditValueFloat(document.getElementById(prefix + "txtOstatokNarujGrata"));
-            SmeschKrom = GetEditValueFloat(document.getElementById(prefix + "txtSmeschKrom"));
-            TolSten = GetEditValueFloat(document.getElementById(prefix + "txtTolSten"));
-            TolSten2 = GetEditValueFloat(document.getElementById(prefix + "txtTolSten2"));
-
-            ShirinaTorKolPTorMin = GetEditValueFloat(document.getElementById(prefix + "txtShirinaTorKolPTorMin"));
-            ShirinaTorKolPTorMax = GetEditValueFloat(document.getElementById(prefix + "txtShirinaTorKolPTorMax"));
-            ShirinaTorKolZTorMin = GetEditValueFloat(document.getElementById(prefix + "txtShirinaTorKolZTorMin"));
-            ShirinaTorKolZTorMax = GetEditValueFloat(document.getElementById(prefix + "txtShirinaTorKolZTorMax"));
-
-            DiametrOnFrontEnd = GetEditValueFloat(document.getElementById(prefix + "txtDiametrOnFrontEnd"));
-            DiametrOnBackEnd = GetEditValueFloat(document.getElementById(prefix + "txtDiametrOnBackEnd"));
-            DiametrOnBody = GetEditValueFloat(document.getElementById(prefix + "txtDiametrOnBody"));
-
             OuterDefect = Trim(document.getElementById(prefix + "ddlOuterDefect").value);
             InnerDefect = Trim(document.getElementById(prefix + "ddlInnerDefect").value);
             WorkPlace = Trim(document.getElementById(prefix + "ddlWorkPlace").value);
             EndDefect = Trim(document.getElementById(prefix + "ddlEndDefect").value);
-            //Проверка наличия данных   
+            //ГЏГ°Г®ГўГҐГ°ГЄГ  Г­Г Г«ГЁГ·ГЁГї Г¤Г Г­Г­Г»Гµ   
             if ((PartNum == "") & (DiamPKpSH == "") & (DiamPKpT == "") & (DiamTpSH == "") & (DiamTpT == "") & (DiamZKpSH == "") & (DiamZKpT == "")
                 & (Dlina == "") & (KosinaPTor == "") & (KosinaZTor == "") & (Krivizna1mT == "") & (KriviznaVciaT == "")
                 & (OstatokVnutGrata == "") & (OstatokNarujGrata == "") & (SmeschKrom == "") & (TolSten == "") & (TolSten2 == "") & (ShirinaTorKolPTorMin == "")
                 & (ShirinaTorKolPTorMax == "") & (ShirinaTorKolZTorMin == "") & (ShirinaTorKolZTorMax == "")) {
-                alert("Не указано ни одного значения.\nДля продолжения необходимо их указать.");
+                alert("ГЌГҐ ГіГЄГ Г§Г Г­Г® Г­ГЁ Г®Г¤Г­Г®ГЈГ® Г§Г­Г Г·ГҐГ­ГЁГї.\nГ„Г«Гї ГЇГ°Г®Г¤Г®Г«Г¦ГҐГ­ГЁГї Г­ГҐГ®ГЎГµГ®Г¤ГЁГ¬Г® ГЁГµ ГіГЄГ Г§Г ГІГј.");
                 return false;
             }
 
-            //проверка заполнения всех данных
+            //ГЇГ°Г®ГўГҐГ°ГЄГ  Г§Г ГЇГ®Г«Г­ГҐГ­ГЁГї ГўГ±ГҐГµ Г¤Г Г­Г­Г»Гµ
             msg = "";
 
             if (PartNum == "")
-                msg = msg + "Необходимо указать значение в поле \"Номер партии\"\n";
+                msg = msg + "ГЌГҐГ®ГЎГµГ®Г¤ГЁГ¬Г® ГіГЄГ Г§Г ГІГј Г§Г­Г Г·ГҐГ­ГЁГҐ Гў ГЇГ®Г«ГҐ \"ГЌГ®Г¬ГҐГ° ГЇГ Г°ГІГЁГЁ\"\n";
             if (Dlina == "")
-                msg = msg + "Необходимо указать значение в поле \"Длина трубы\"\n";
+                msg = msg + "ГЌГҐГ®ГЎГµГ®Г¤ГЁГ¬Г® ГіГЄГ Г§Г ГІГј Г§Г­Г Г·ГҐГ­ГЁГҐ Гў ГЇГ®Г«ГҐ \"Г„Г«ГЁГ­Г  ГІГ°ГіГЎГ»\"\n";
             if (KosinaPTor == "")
-                msg = msg + "Необходимо указать значение в поле \"Косина реза (передний торец)\"\n";
+                msg = msg + "ГЌГҐГ®ГЎГµГ®Г¤ГЁГ¬Г® ГіГЄГ Г§Г ГІГј Г§Г­Г Г·ГҐГ­ГЁГҐ Гў ГЇГ®Г«ГҐ \"ГЉГ®Г±ГЁГ­Г  Г°ГҐГ§Г  (ГЇГҐГ°ГҐГ¤Г­ГЁГ© ГІГ®Г°ГҐГ¶)\"\n";
             if (KosinaZTor == "")
-                msg = msg + "Необходимо указать значение в поле \"Косина реза (задний торец)\"\n";
+                msg = msg + "ГЌГҐГ®ГЎГµГ®Г¤ГЁГ¬Г® ГіГЄГ Г§Г ГІГј Г§Г­Г Г·ГҐГ­ГЁГҐ Гў ГЇГ®Г«ГҐ \"ГЉГ®Г±ГЁГ­Г  Г°ГҐГ§Г  (Г§Г Г¤Г­ГЁГ© ГІГ®Г°ГҐГ¶)\"\n";
             if (Krivizna1mT == "")
-                msg = msg + "Необходимо указать значение в поле \"Кривизна на 1 м трубы\"\n";
+                msg = msg + "ГЌГҐГ®ГЎГµГ®Г¤ГЁГ¬Г® ГіГЄГ Г§Г ГІГј Г§Г­Г Г·ГҐГ­ГЁГҐ Гў ГЇГ®Г«ГҐ \"ГЉГ°ГЁГўГЁГ§Г­Г  Г­Г  1 Г¬ ГІГ°ГіГЎГ»\"\n";
             if (KriviznaVciaT == "")
-                msg = msg + "Необходимо указать значение в поле \"Кривизна трубы по всей длине\"\n";
+                msg = msg + "ГЌГҐГ®ГЎГµГ®Г¤ГЁГ¬Г® ГіГЄГ Г§Г ГІГј Г§Г­Г Г·ГҐГ­ГЁГҐ Гў ГЇГ®Г«ГҐ \"ГЉГ°ГЁГўГЁГ§Г­Г  ГІГ°ГіГЎГ» ГЇГ® ГўГ±ГҐГ© Г¤Г«ГЁГ­ГҐ\"\n";
             if (OstatokVnutGrata == "")
-                msg = msg + "Необходимо указать значение в поле \"Остаток внутреннего грата\"\n";
+                msg = msg + "ГЌГҐГ®ГЎГµГ®Г¤ГЁГ¬Г® ГіГЄГ Г§Г ГІГј Г§Г­Г Г·ГҐГ­ГЁГҐ Гў ГЇГ®Г«ГҐ \"ГЋГ±ГІГ ГІГ®ГЄ ГўГ­ГіГІГ°ГҐГ­Г­ГҐГЈГ® ГЈГ°Г ГІГ \"\n";
             if (OstatokNarujGrata == "")
-                msg = msg + "Необходимо указать значение в поле \"Остаток наружного грата\"\n";
+                msg = msg + "ГЌГҐГ®ГЎГµГ®Г¤ГЁГ¬Г® ГіГЄГ Г§Г ГІГј Г§Г­Г Г·ГҐГ­ГЁГҐ Гў ГЇГ®Г«ГҐ \"ГЋГ±ГІГ ГІГ®ГЄ Г­Г Г°ГіГ¦Г­Г®ГЈГ® ГЈГ°Г ГІГ \"\n";
             if (SmeschKrom == "")
-                msg = msg + "Необходимо указать значение в поле \"Смещение кромок трубы\"\n";
+                msg = msg + "ГЌГҐГ®ГЎГµГ®Г¤ГЁГ¬Г® ГіГЄГ Г§Г ГІГј Г§Г­Г Г·ГҐГ­ГЁГҐ Гў ГЇГ®Г«ГҐ \"Г‘Г¬ГҐГ№ГҐГ­ГЁГҐ ГЄГ°Г®Г¬Г®ГЄ ГІГ°ГіГЎГ»\"\n";
             if (TolSten == "")
-                msg = msg + "Необходимо указать значение в поле \"Толщина стенки трубы (замер 1)\"\n";
+                msg = msg + "ГЌГҐГ®ГЎГµГ®Г¤ГЁГ¬Г® ГіГЄГ Г§Г ГІГј Г§Г­Г Г·ГҐГ­ГЁГҐ Гў ГЇГ®Г«ГҐ \"Г’Г®Г«Г№ГЁГ­Г  Г±ГІГҐГ­ГЄГЁ ГІГ°ГіГЎГ» (Г§Г Г¬ГҐГ° 1)\"\n";
             if (TolSten2 == "")
-                msg = msg + "Необходимо указать значение в поле \"Толщина стенки трубы (замер 2)\"\n";
+                msg = msg + "ГЌГҐГ®ГЎГµГ®Г¤ГЁГ¬Г® ГіГЄГ Г§Г ГІГј Г§Г­Г Г·ГҐГ­ГЁГҐ Гў ГЇГ®Г«ГҐ \"Г’Г®Г«Г№ГЁГ­Г  Г±ГІГҐГ­ГЄГЁ ГІГ°ГіГЎГ» (Г§Г Г¬ГҐГ° 2)\"\n";
 
             if (DiametrOnFrontEnd == "")
-                msg = msg + "Необходимо указать значение в поле \"Диаметр по переднему концу\"\n";
+                msg = msg + "ГЌГҐГ®ГЎГµГ®Г¤ГЁГ¬Г® ГіГЄГ Г§Г ГІГј Г§Г­Г Г·ГҐГ­ГЁГҐ Гў ГЇГ®Г«ГҐ \"Г„ГЁГ Г¬ГҐГІГ° ГЇГ® ГЇГҐГ°ГҐГ¤Г­ГҐГ¬Гі ГЄГ®Г­Г¶Гі\"\n";
             if (DiametrOnBackEnd == "")
-                msg = msg + "Необходимо указать значение в поле \"Диаметр по заднему концу\"\n";
+                msg = msg + "ГЌГҐГ®ГЎГµГ®Г¤ГЁГ¬Г® ГіГЄГ Г§Г ГІГј Г§Г­Г Г·ГҐГ­ГЁГҐ Гў ГЇГ®Г«ГҐ \"Г„ГЁГ Г¬ГҐГІГ° ГЇГ® Г§Г Г¤Г­ГҐГ¬Гі ГЄГ®Г­Г¶Гі\"\n";
             if (DiametrOnBody == "")
-                msg = msg + "Необходимо указать значение в поле \"Диаметр по телу\"\n";
+                msg = msg + "ГЌГҐГ®ГЎГµГ®Г¤ГЁГ¬Г® ГіГЄГ Г§Г ГІГј Г§Г­Г Г·ГҐГ­ГЁГҐ Гў ГЇГ®Г«ГҐ \"Г„ГЁГ Г¬ГҐГІГ° ГЇГ® ГІГҐГ«Гі\"\n";
 
             if (ShirinaTorKolPTorMin == "")
-                msg = msg + "Необходимо указать значение в поле \"Ширина торцевого кольца передний торец - минимальный\"\n";
+                msg = msg + "ГЌГҐГ®ГЎГµГ®Г¤ГЁГ¬Г® ГіГЄГ Г§Г ГІГј Г§Г­Г Г·ГҐГ­ГЁГҐ Гў ГЇГ®Г«ГҐ \"ГГЁГ°ГЁГ­Г  ГІГ®Г°Г¶ГҐГўГ®ГЈГ® ГЄГ®Г«ГјГ¶Г  ГЇГҐГ°ГҐГ¤Г­ГЁГ© ГІГ®Г°ГҐГ¶ - Г¬ГЁГ­ГЁГ¬Г Г«ГјГ­Г»Г©\"\n";
 
             if (ShirinaTorKolPTorMax == "")
-                msg = msg + "Необходимо указать значение в поле \"Ширина торцевого кольца передний торец - максимальный\"\n";
+                msg = msg + "ГЌГҐГ®ГЎГµГ®Г¤ГЁГ¬Г® ГіГЄГ Г§Г ГІГј Г§Г­Г Г·ГҐГ­ГЁГҐ Гў ГЇГ®Г«ГҐ \"ГГЁГ°ГЁГ­Г  ГІГ®Г°Г¶ГҐГўГ®ГЈГ® ГЄГ®Г«ГјГ¶Г  ГЇГҐГ°ГҐГ¤Г­ГЁГ© ГІГ®Г°ГҐГ¶ - Г¬Г ГЄГ±ГЁГ¬Г Г«ГјГ­Г»Г©\"\n";
 
             if (ShirinaTorKolZTorMin == "")
-                msg = msg + "Необходимо указать значение в поле \"Ширина торцевого кольца задний торец - минимальный\"\n";
+                msg = msg + "ГЌГҐГ®ГЎГµГ®Г¤ГЁГ¬Г® ГіГЄГ Г§Г ГІГј Г§Г­Г Г·ГҐГ­ГЁГҐ Гў ГЇГ®Г«ГҐ \"ГГЁГ°ГЁГ­Г  ГІГ®Г°Г¶ГҐГўГ®ГЈГ® ГЄГ®Г«ГјГ¶Г  Г§Г Г¤Г­ГЁГ© ГІГ®Г°ГҐГ¶ - Г¬ГЁГ­ГЁГ¬Г Г«ГјГ­Г»Г©\"\n";
 
             if (ShirinaTorKolZTorMax == "")
-                msg = msg + "Необходимо указать значение в поле \"Ширина торцевого кольца задний торец - максимальный\"\n";
+                msg = msg + "ГЌГҐГ®ГЎГµГ®Г¤ГЁГ¬Г® ГіГЄГ Г§Г ГІГј Г§Г­Г Г·ГҐГ­ГЁГҐ Гў ГЇГ®Г«ГҐ \"ГГЁГ°ГЁГ­Г  ГІГ®Г°Г¶ГҐГўГ®ГЈГ® ГЄГ®Г«ГјГ¶Г  Г§Г Г¤Г­ГЁГ© ГІГ®Г°ГҐГ¶ - Г¬Г ГЄГ±ГЁГ¬Г Г«ГјГ­Г»Г©\"\n";
 
             if (OuterDefect == "")
-                msg = msg + "Необходимо заполнить поле \"Состояние наружной поверхности\". Если дефект отсутствует, то необходимо выбрать \"Уд\"\n";
+                msg = msg + "ГЌГҐГ®ГЎГµГ®Г¤ГЁГ¬Г® Г§Г ГЇГ®Г«Г­ГЁГІГј ГЇГ®Г«ГҐ \"Г‘Г®Г±ГІГ®ГїГ­ГЁГҐ Г­Г Г°ГіГ¦Г­Г®Г© ГЇГ®ГўГҐГ°ГµГ­Г®Г±ГІГЁ\". Г…Г±Г«ГЁ Г¤ГҐГґГҐГЄГІ Г®ГІГ±ГіГІГ±ГІГўГіГҐГІ, ГІГ® Г­ГҐГ®ГЎГµГ®Г¤ГЁГ¬Г® ГўГ»ГЎГ°Г ГІГј \"Г“Г¤\"\n";
 
             if (InnerDefect == "")
-                msg = msg + "Необходимо заполнить поле \"Состояние внутренней поверхности\". Если дефект отсутствует, то необходимо выбрать \"Уд\"\n";
+                msg = msg + "ГЌГҐГ®ГЎГµГ®Г¤ГЁГ¬Г® Г§Г ГЇГ®Г«Г­ГЁГІГј ГЇГ®Г«ГҐ \"Г‘Г®Г±ГІГ®ГїГ­ГЁГҐ ГўГ­ГіГІГ°ГҐГ­Г­ГҐГ© ГЇГ®ГўГҐГ°ГµГ­Г®Г±ГІГЁ\". Г…Г±Г«ГЁ Г¤ГҐГґГҐГЄГІ Г®ГІГ±ГіГІГ±ГІГўГіГҐГІ, ГІГ® Г­ГҐГ®ГЎГµГ®Г¤ГЁГ¬Г® ГўГ»ГЎГ°Г ГІГј \"Г“Г¤\"\n";
 
             if (WorkPlace == "-1")
-                msg = msg + "Необходимо заполнить поле \"Номер инспекционной решетки\"\n";
+                msg = msg + "ГЌГҐГ®ГЎГµГ®Г¤ГЁГ¬Г® Г§Г ГЇГ®Г«Г­ГЁГІГј ГЇГ®Г«ГҐ \"ГЌГ®Г¬ГҐГ° ГЁГ­Г±ГЇГҐГЄГ¶ГЁГ®Г­Г­Г®Г© Г°ГҐГёГҐГІГЄГЁ\"\n";
 
             if (EndDefect == "")
-                msg = msg + "Необходимо заполнить поле \"Заусенцы на торцах\". Если дефект отсутствует, то необходимо выбрать \"Уд\"\n";
+                msg = msg + "ГЌГҐГ®ГЎГµГ®Г¤ГЁГ¬Г® Г§Г ГЇГ®Г«Г­ГЁГІГј ГЇГ®Г«ГҐ \"Г‡Г ГіГ±ГҐГ­Г¶Г» Г­Г  ГІГ®Г°Г¶Г Гµ\". Г…Г±Г«ГЁ Г¤ГҐГґГҐГЄГІ Г®ГІГ±ГіГІГ±ГІГўГіГҐГІ, ГІГ® Г­ГҐГ®ГЎГµГ®Г¤ГЁГ¬Г® ГўГ»ГЎГ°Г ГІГј \"Г“Г¤\"\n";
 
 
             if (msg != "") {
-                alert(msg + "\nДля продолжения необходимо указать перечисленные значения.");
+                alert(msg + "\nГ„Г«Гї ГЇГ°Г®Г¤Г®Г«Г¦ГҐГ­ГЁГї Г­ГҐГ®ГЎГµГ®Г¤ГЁГ¬Г® ГіГЄГ Г§Г ГІГј ГЇГҐГ°ГҐГ·ГЁГ±Г«ГҐГ­Г­Г»ГҐ Г§Г­Г Г·ГҐГ­ГЁГї.");
                 return false;
             }
 
-            //проверка правильности ввода всех данных
+            //ГЇГ°Г®ГўГҐГ°ГЄГ  ГЇГ°Г ГўГЁГ«ГјГ­Г®Г±ГІГЁ ГўГўГ®Г¤Г  ГўГ±ГҐГµ Г¤Г Г­Г­Г»Гµ
             msg = "";
 
             if (!IsNumber(PartNum, false))
-                msg = msg + "Неверно указано значение в поле \"Номер партии\"\n";
+                msg = msg + "ГЌГҐГўГҐГ°Г­Г® ГіГЄГ Г§Г Г­Г® Г§Г­Г Г·ГҐГ­ГЁГҐ Гў ГЇГ®Г«ГҐ \"ГЌГ®Г¬ГҐГ° ГЇГ Г°ГІГЁГЁ\"\n";
             if (!IsNumber(DiamPKpSH, false))
-                msg = msg + "Неверно указано значение в поле \"Диаметр локальный по переднему концу трубы максимальный, мм\"\n";
+                msg = msg + "ГЌГҐГўГҐГ°Г­Г® ГіГЄГ Г§Г Г­Г® Г§Г­Г Г·ГҐГ­ГЁГҐ Гў ГЇГ®Г«ГҐ \"Г„ГЁГ Г¬ГҐГІГ° Г«Г®ГЄГ Г«ГјГ­Г»Г© ГЇГ® ГЇГҐГ°ГҐГ¤Г­ГҐГ¬Гі ГЄГ®Г­Г¶Гі ГІГ°ГіГЎГ» Г¬Г ГЄГ±ГЁГ¬Г Г«ГјГ­Г»Г©, Г¬Г¬\"\n";
             if (!IsNumber(DiamPKpT, false))
-                msg = msg + "Неверно указано значение в поле \"Диаметр локальный по переднему концу трубы минимальный\"\n";
+                msg = msg + "ГЌГҐГўГҐГ°Г­Г® ГіГЄГ Г§Г Г­Г® Г§Г­Г Г·ГҐГ­ГЁГҐ Гў ГЇГ®Г«ГҐ \"Г„ГЁГ Г¬ГҐГІГ° Г«Г®ГЄГ Г«ГјГ­Г»Г© ГЇГ® ГЇГҐГ°ГҐГ¤Г­ГҐГ¬Гі ГЄГ®Г­Г¶Гі ГІГ°ГіГЎГ» Г¬ГЁГ­ГЁГ¬Г Г«ГјГ­Г»Г©\"\n";
             if (!IsNumber(DiamTpSH, false))
-                msg = msg + "Неверно указано значение в поле \"Диаметр локальный по телу трубы максимальный\"\n";
+                msg = msg + "ГЌГҐГўГҐГ°Г­Г® ГіГЄГ Г§Г Г­Г® Г§Г­Г Г·ГҐГ­ГЁГҐ Гў ГЇГ®Г«ГҐ \"Г„ГЁГ Г¬ГҐГІГ° Г«Г®ГЄГ Г«ГјГ­Г»Г© ГЇГ® ГІГҐГ«Гі ГІГ°ГіГЎГ» Г¬Г ГЄГ±ГЁГ¬Г Г«ГјГ­Г»Г©\"\n";
             if (!IsNumber(DiamTpT, false))
-                msg = msg + "Неверно указано значение в поле \"Диаметр локальный по телу трубы минимальный\"\n";
+                msg = msg + "ГЌГҐГўГҐГ°Г­Г® ГіГЄГ Г§Г Г­Г® Г§Г­Г Г·ГҐГ­ГЁГҐ Гў ГЇГ®Г«ГҐ \"Г„ГЁГ Г¬ГҐГІГ° Г«Г®ГЄГ Г«ГјГ­Г»Г© ГЇГ® ГІГҐГ«Гі ГІГ°ГіГЎГ» Г¬ГЁГ­ГЁГ¬Г Г«ГјГ­Г»Г©\"\n";
             if (!IsNumber(DiamZKpSH, false))
-                msg = msg + "Неверно указано значение в поле \"Диаметр локальный по заднему концу трубы максимальный\"\n";
+                msg = msg + "ГЌГҐГўГҐГ°Г­Г® ГіГЄГ Г§Г Г­Г® Г§Г­Г Г·ГҐГ­ГЁГҐ Гў ГЇГ®Г«ГҐ \"Г„ГЁГ Г¬ГҐГІГ° Г«Г®ГЄГ Г«ГјГ­Г»Г© ГЇГ® Г§Г Г¤Г­ГҐГ¬Гі ГЄГ®Г­Г¶Гі ГІГ°ГіГЎГ» Г¬Г ГЄГ±ГЁГ¬Г Г«ГјГ­Г»Г©\"\n";
             if (!IsNumber(DiamZKpT, false))
-                msg = msg + "Неверно указано значение в поле \"Диаметр локальный по заднему концу трубы минимальный\"\n";
+                msg = msg + "ГЌГҐГўГҐГ°Г­Г® ГіГЄГ Г§Г Г­Г® Г§Г­Г Г·ГҐГ­ГЁГҐ Гў ГЇГ®Г«ГҐ \"Г„ГЁГ Г¬ГҐГІГ° Г«Г®ГЄГ Г«ГјГ­Г»Г© ГЇГ® Г§Г Г¤Г­ГҐГ¬Гі ГЄГ®Г­Г¶Гі ГІГ°ГіГЎГ» Г¬ГЁГ­ГЁГ¬Г Г«ГјГ­Г»Г©\"\n";
             if (!IsNumber(Dlina, false))
-                msg = msg + "Неверно указано значение в поле \"Длина трубы\"\n";
+                msg = msg + "ГЌГҐГўГҐГ°Г­Г® ГіГЄГ Г§Г Г­Г® Г§Г­Г Г·ГҐГ­ГЁГҐ Гў ГЇГ®Г«ГҐ \"Г„Г«ГЁГ­Г  ГІГ°ГіГЎГ»\"\n";
             if (!IsNumber(KosinaPTor, false))
-                msg = msg + "Неверно указано значение в поле \"Косина реза (передний торец)\"\n";
+                msg = msg + "ГЌГҐГўГҐГ°Г­Г® ГіГЄГ Г§Г Г­Г® Г§Г­Г Г·ГҐГ­ГЁГҐ Гў ГЇГ®Г«ГҐ \"ГЉГ®Г±ГЁГ­Г  Г°ГҐГ§Г  (ГЇГҐГ°ГҐГ¤Г­ГЁГ© ГІГ®Г°ГҐГ¶)\"\n";
             if (!IsNumber(KosinaZTor, false))
-                msg = msg + "Неверно указано значение в поле \"Косина реза (задний торец)\"\n";
+                msg = msg + "ГЌГҐГўГҐГ°Г­Г® ГіГЄГ Г§Г Г­Г® Г§Г­Г Г·ГҐГ­ГЁГҐ Гў ГЇГ®Г«ГҐ \"ГЉГ®Г±ГЁГ­Г  Г°ГҐГ§Г  (Г§Г Г¤Г­ГЁГ© ГІГ®Г°ГҐГ¶)\"\n";
             if (!IsNumber(Krivizna1mT, false))
-                msg = msg + "Неверно указано значение в поле \"Кривизна на 1 м трубы\"\n";
+                msg = msg + "ГЌГҐГўГҐГ°Г­Г® ГіГЄГ Г§Г Г­Г® Г§Г­Г Г·ГҐГ­ГЁГҐ Гў ГЇГ®Г«ГҐ \"ГЉГ°ГЁГўГЁГ§Г­Г  Г­Г  1 Г¬ ГІГ°ГіГЎГ»\"\n";
             if (!IsNumber(KriviznaVciaT, false))
-                msg = msg + "Неверно указано значение в поле \"Кривизна трубы по всей длине\"\n";
+                msg = msg + "ГЌГҐГўГҐГ°Г­Г® ГіГЄГ Г§Г Г­Г® Г§Г­Г Г·ГҐГ­ГЁГҐ Гў ГЇГ®Г«ГҐ \"ГЉГ°ГЁГўГЁГ§Г­Г  ГІГ°ГіГЎГ» ГЇГ® ГўГ±ГҐГ© Г¤Г«ГЁГ­ГҐ\"\n";
             if (!IsNumber(OstatokVnutGrata, false))
-                msg = msg + "Неверно указано значение в поле \"Остаток внутреннего грата\"\n";
+                msg = msg + "ГЌГҐГўГҐГ°Г­Г® ГіГЄГ Г§Г Г­Г® Г§Г­Г Г·ГҐГ­ГЁГҐ Гў ГЇГ®Г«ГҐ \"ГЋГ±ГІГ ГІГ®ГЄ ГўГ­ГіГІГ°ГҐГ­Г­ГҐГЈГ® ГЈГ°Г ГІГ \"\n";
             if (!IsNumber(OstatokNarujGrata, false))
-                msg = msg + "Неверно указано значение в поле \"Остаток наружного грата\"\n";
+                msg = msg + "ГЌГҐГўГҐГ°Г­Г® ГіГЄГ Г§Г Г­Г® Г§Г­Г Г·ГҐГ­ГЁГҐ Гў ГЇГ®Г«ГҐ \"ГЋГ±ГІГ ГІГ®ГЄ Г­Г Г°ГіГ¦Г­Г®ГЈГ® ГЈГ°Г ГІГ \"\n";
             if (!IsNumber(SmeschKrom, false))
-                msg = msg + "Неверно указано значение в поле \"Смещение кромок трубы\"\n";
+                msg = msg + "ГЌГҐГўГҐГ°Г­Г® ГіГЄГ Г§Г Г­Г® Г§Г­Г Г·ГҐГ­ГЁГҐ Гў ГЇГ®Г«ГҐ \"Г‘Г¬ГҐГ№ГҐГ­ГЁГҐ ГЄГ°Г®Г¬Г®ГЄ ГІГ°ГіГЎГ»\"\n";
             if (!IsNumber(TolSten, false))
-                msg = msg + "Неверно указано значение в поле \"Толщина стенки трубы (замер 1)\"\n";
+                msg = msg + "ГЌГҐГўГҐГ°Г­Г® ГіГЄГ Г§Г Г­Г® Г§Г­Г Г·ГҐГ­ГЁГҐ Гў ГЇГ®Г«ГҐ \"Г’Г®Г«Г№ГЁГ­Г  Г±ГІГҐГ­ГЄГЁ ГІГ°ГіГЎГ» (Г§Г Г¬ГҐГ° 1)\"\n";
             if (!IsNumber(TolSten2, false))
-                msg = msg + "Неверно указано значение в поле \"Толщина стенки трубы (замер 2)\"\n";
+                msg = msg + "ГЌГҐГўГҐГ°Г­Г® ГіГЄГ Г§Г Г­Г® Г§Г­Г Г·ГҐГ­ГЁГҐ Гў ГЇГ®Г«ГҐ \"Г’Г®Г«Г№ГЁГ­Г  Г±ГІГҐГ­ГЄГЁ ГІГ°ГіГЎГ» (Г§Г Г¬ГҐГ° 2)\"\n";
 
             if (!IsNumber(DiametrOnFrontEnd, false))
-                msg = msg + "Неверно указано значение в поле \"Диаметр по переднему концу\"\n";
+                msg = msg + "ГЌГҐГўГҐГ°Г­Г® ГіГЄГ Г§Г Г­Г® Г§Г­Г Г·ГҐГ­ГЁГҐ Гў ГЇГ®Г«ГҐ \"Г„ГЁГ Г¬ГҐГІГ° ГЇГ® ГЇГҐГ°ГҐГ¤Г­ГҐГ¬Гі ГЄГ®Г­Г¶Гі\"\n";
             if (!IsNumber(DiametrOnBackEnd, false))
-                msg = msg + "Неверно указано значение в поле \"Диаметр по заднему концу\"\n";
+                msg = msg + "ГЌГҐГўГҐГ°Г­Г® ГіГЄГ Г§Г Г­Г® Г§Г­Г Г·ГҐГ­ГЁГҐ Гў ГЇГ®Г«ГҐ \"Г„ГЁГ Г¬ГҐГІГ° ГЇГ® Г§Г Г¤Г­ГҐГ¬Гі ГЄГ®Г­Г¶Гі\"\n";
             if (!IsNumber(DiametrOnBody, false))
-                msg = msg + "Неверно указано значение в поле \"Диаметр по телу\"\n";
+                msg = msg + "ГЌГҐГўГҐГ°Г­Г® ГіГЄГ Г§Г Г­Г® Г§Г­Г Г·ГҐГ­ГЁГҐ Гў ГЇГ®Г«ГҐ \"Г„ГЁГ Г¬ГҐГІГ° ГЇГ® ГІГҐГ«Гі\"\n";
             if (msg != "") {
-                alert(msg + "\nДля продолжения необходимо правильно указать перечисленные значения.");
+                alert(msg + "\nГ„Г«Гї ГЇГ°Г®Г¤Г®Г«Г¦ГҐГ­ГЁГї Г­ГҐГ®ГЎГµГ®Г¤ГЁГ¬Г® ГЇГ°Г ГўГЁГ«ГјГ­Г® ГіГЄГ Г§Г ГІГј ГЇГҐГ°ГҐГ·ГЁГ±Г«ГҐГ­Г­Г»ГҐ Г§Г­Г Г·ГҐГ­ГЁГї.");
                 return false;
             }
             return true;
@@ -293,9 +184,9 @@
                     <td style="text-align: left;">
                         <table>
                             <tr>
-                                <td style="vertical-align: middle; text-align: left; font-size: 10pt;">Год</td>
+                                <td style="vertical-align: middle; text-align: left; font-size: 10pt;">ГѓГ®Г¤</td>
                                 <td style="vertical-align: middle; text-align: left;"></td>
-                                <td style="vertical-align: middle; text-align: left; font-size: 10pt;">№ Трубы</td>
+                                <td style="vertical-align: middle; text-align: left; font-size: 10pt;">В№ Г’Г°ГіГЎГ»</td>
                                 <td style="vertical-align: middle; text-align: center"></td>
                                 <td style="vertical-align: middle; text-align: center;">
                                     <asp:LinkButton ID="lbtHelpCheck" runat="server" OnClick="lbtHelpCheck_Click">(?)</asp:LinkButton>
@@ -322,7 +213,7 @@
                                 <td style="text-align: left;">
                                     <asp:Button ID="btnInputGeometry" runat="server" Height="23px"
                                         OnClick="btnInputGeometry_Click" OnClientClick="return CheckFindInputs(false)"
-                                        Style="display: inline" TabIndex="4" Text="Ввести данные" Width="107px" />
+                                        Style="display: inline" TabIndex="4" Text="Г‚ГўГҐГ±ГІГЁ Г¤Г Г­Г­Г»ГҐ" Width="107px" />
                                 </td>
                             </tr>
                             <tr>
@@ -336,7 +227,7 @@
                                 <td style="vertical-align: middle; text-align: center;">
                                     <asp:CustomValidator ID="CustomValidator2" runat="server"
                                         ClientValidationFunction="fncClientValidation"
-                                        ControlToValidate="txbPipeNumber" ErrorMessage="Ошибка" Font-Size="Smaller"></asp:CustomValidator>
+                                        ControlToValidate="txbPipeNumber" ErrorMessage="ГЋГёГЁГЎГЄГ " Font-Size="Smaller"></asp:CustomValidator>
                                 </td>
                                 <td style="vertical-align: middle; width: 15px; height: 21px; text-align: center"></td>
                                 <td style="vertical-align: middle; text-align: center;">
@@ -355,7 +246,7 @@
                 Visible="False">
                 <table>
                     <tr>
-                        <td style="width: 371px; height: 26px; font-size: 10pt;">Список существующих записей по геометрическим замерам</td>
+                        <td style="width: 371px; height: 26px; font-size: 10pt;">Г‘ГЇГЁГ±Г®ГЄ Г±ГіГ№ГҐГ±ГІГўГіГѕГ№ГЁГµ Г§Г ГЇГЁГ±ГҐГ© ГЇГ® ГЈГҐГ®Г¬ГҐГІГ°ГЁГ·ГҐГ±ГЄГЁГ¬ Г§Г Г¬ГҐГ°Г Г¬</td>
                     </tr>
                     <tr>
                         <td style="width: 371px;">
@@ -366,7 +257,7 @@
                     <tr>
                         <td style="width: 371px;">
                             <asp:Button ID="btnAddNewRecord_ifRecExists" runat="server"
-                                Text="Добавить новую запись" Width="163px" Font-Size="10pt"
+                                Text="Г„Г®ГЎГ ГўГЁГІГј Г­Г®ГўГіГѕ Г§Г ГЇГЁГ±Гј" Width="163px" Font-Size="10pt"
                                 Height="23px" />
                         </td>
                     </tr>
@@ -377,14 +268,14 @@
             <table>
                 <tr>
                     <td style="height: 100px; width: 667px;">
-                        <font size="2">Чтобы раccчитать контрольную цифру для №<asp:Label 
+                        <font size="2">Г—ГІГ®ГЎГ» Г°Г ccГ·ГЁГІГ ГІГј ГЄГ®Г­ГІГ°Г®Г«ГјГ­ГіГѕ Г¶ГЁГґГ°Гі Г¤Г«Гї В№<asp:Label 
                             ID="lblNumtrub" runat="server"></asp:Label>
-                        ввдедите свой логин и пароль</font>
+                        ГўГўГ¤ГҐГ¤ГЁГІГҐ Г±ГўГ®Г© Г«Г®ГЈГЁГ­ ГЁ ГЇГ Г°Г®Г«Гј</font>
                         <br style="font-size: 10pt" />
                         <table>
                             <tr>
                                 <td>
-                                    <font size="2">Логин</font>
+                                    <font size="2">Г‹Г®ГЈГЁГ­</font>
                                 </td>
                                 <td style="width: 158px">
                                     <asp:TextBox ID="txbLogin" runat="server" TabIndex="1" Width="184px"></asp:TextBox>
@@ -392,7 +283,7 @@
                             </tr>
                             <tr>
                                 <td>
-                                    <font size="2">Пароль</font>
+                                    <font size="2">ГЏГ Г°Г®Г«Гј</font>
                                 </td>
                                 <td style="width: 158px">
                                     <asp:TextBox ID="txbPassword" runat="server" TabIndex="2" TextMode="Password"
@@ -408,7 +299,7 @@
                                         TabIndex="3" Text="Ok" Width="69px" Font-Size="10pt" />
                                     &nbsp;
                                     <asp:Button ID="btnCansel" runat="server" Height="23px"
-                                        OnClick="btnCansel_Click" TabIndex="4" Text="Отмена" UseSubmitBehavior="False"
+                                        OnClick="btnCansel_Click" TabIndex="4" Text="ГЋГІГ¬ГҐГ­Г " UseSubmitBehavior="False"
                                         Width="69px" Font-Size="10pt" />
                                 </td>
                             </tr>
@@ -425,17 +316,17 @@
                         <table style="font-size: 10pt">
                             <tr>
                                 <td style="text-align: left; width: 466px;">
-                                    <b>Труба №
+                                    <b>Г’Г°ГіГЎГ  В№
                                     <asp:Label ID="txtPipeNumberDubl" runat="server" Width="24%"></asp:Label>
                                     </b>
                                 </td>
                                 <td style="text-align: left; width: 900px;">
-                                    <strong>Номер партии</strong>&nbsp;
+                                    <strong>ГЌГ®Г¬ГҐГ° ГЇГ Г°ГІГЁГЁ</strong>&nbsp;
                                     <asp:TextBox ID="txtPartNumber" runat="server" MaxLength="5" TabIndex="1"
                                         Width="57px"></asp:TextBox>
                                     &nbsp; &nbsp;<asp:CustomValidator ID="CustomValidator4" runat="server"
                                         ClientValidationFunction="fncClientValidation"
-                                        ControlToValidate="txtPartNumber" ErrorMessage="Ошибка" Font-Size="Smaller"
+                                        ControlToValidate="txtPartNumber" ErrorMessage="ГЋГёГЁГЎГЄГ " Font-Size="Smaller"
                                         Width="19px"></asp:CustomValidator>
                                 </td>
                                 <td style="width: 900px; text-align: left;"></td>
@@ -447,7 +338,7 @@
             <table style="margin-top: 8px; margin-bottom: 8px;" id="tblCampaign"
                 runat="server">
                 <tr>
-                    <td bgcolor="#e0e0e0">Строка задания на кампанию</td>
+                    <td bgcolor="#e0e0e0">Г‘ГІГ°Г®ГЄГ  Г§Г Г¤Г Г­ГЁГї Г­Г  ГЄГ Г¬ГЇГ Г­ГЁГѕ</td>
                 </tr>
                 <tr>
                     <td>
@@ -468,12 +359,12 @@
             <table style="margin-top: 8px; margin-bottom: 8px;" id="Table1"
                 runat="server">
                 <tr>
-                    <td>Номер инспекционной решетки</td>
+                    <td>ГЌГ®Г¬ГҐГ° ГЁГ­Г±ГЇГҐГЄГ¶ГЁГ®Г­Г­Г®Г© Г°ГҐГёГҐГІГЄГЁ</td>
                     <td>
                         <asp:DropDownList
                             ID="ddlWorkPlace" runat="server" AutoPostBack="True" Font-Bold="True" TabIndex="3" OnSelectedIndexChanged="ddlWorkPlace_SelectedIndexChanged">
-                            <asp:ListItem Value="-1">(выберите)</asp:ListItem>
-                            <asp:ListItem Value="0">ПДО</asp:ListItem>
+                            <asp:ListItem Value="-1">(ГўГ»ГЎГҐГ°ГЁГІГҐ)</asp:ListItem>
+                            <asp:ListItem Value="0">ГЏГ„ГЋ</asp:ListItem>
                             <asp:ListItem>1</asp:ListItem>
                             <asp:ListItem>2</asp:ListItem>
                             <asp:ListItem>3</asp:ListItem>
@@ -486,14 +377,14 @@
                             <asp:ListItem Value="83">10</asp:ListItem>
                             <asp:ListItem Value="84">11</asp:ListItem>
                             <asp:ListItem Value="63">Mair</asp:ListItem>
-                            <asp:ListItem Value="7">Участок ремонта</asp:ListItem>
+                            <asp:ListItem Value="7">Г“Г·Г Г±ГІГ®ГЄ Г°ГҐГ¬Г®Г­ГІГ </asp:ListItem>
                         </asp:DropDownList>
                     </td>
                 </tr>
                 <tr>
                     <td>
                         <asp:Button ID="btnLoad" runat="server" Height="23px"
-                            OnClientClick="" TabIndex="3" Text="Заполнить значения"
+                            OnClientClick="" TabIndex="3" Text="Г‡Г ГЇГ®Г«Г­ГЁГІГј Г§Г­Г Г·ГҐГ­ГЁГї"
                             UseSubmitBehavior="False" Font-Size="10pt" OnClick="btnLoad_Click" />
                     </td>
                 </tr>
@@ -512,16 +403,16 @@
                             <tr>
                                 <td style="font-size: 10pt; text-align: left; height: 36px;" colspan="2">
                                     <img src="Images/CX.png" />
-                                    Диаметр локальный по переднему концу трубы, мм</td>
-                                <td style="width: 900px; text-align: left" rowspan="2">Овальность по переднему
+                                    Г„ГЁГ Г¬ГҐГІГ° Г«Г®ГЄГ Г«ГјГ­Г»Г© ГЇГ® ГЇГҐГ°ГҐГ¤Г­ГҐГ¬Гі ГЄГ®Г­Г¶Гі ГІГ°ГіГЎГ», Г¬Г¬</td>
+                                <td style="width: 900px; text-align: left" rowspan="2">ГЋГўГ Г«ГјГ­Г®Г±ГІГј ГЇГ® ГЇГҐГ°ГҐГ¤Г­ГҐГ¬Гі
                                     <br />
-                                    концу трубы, мм
+                                    ГЄГ®Г­Г¶Гі ГІГ°ГіГЎГ», Г¬Г¬
                                 </td>
                                 <td style="width: 900px; text-align: left" rowspan="2"></td>
                             </tr>
                             <tr>
-                                <td style="font-size: 10pt; text-align: left; width: 900px;">минимальный</td>
-                                <td style="text-align: left; width: 900px;">максимальный</td>
+                                <td style="font-size: 10pt; text-align: left; width: 900px;">Г¬ГЁГ­ГЁГ¬Г Г«ГјГ­Г»Г©</td>
+                                <td style="text-align: left; width: 900px;">Г¬Г ГЄГ±ГЁГ¬Г Г«ГјГ­Г»Г©</td>
                             </tr>
                             <tr>
                                 <td style="text-align: left; width: 900px; font-size: 12pt; color: #000000;">
@@ -530,7 +421,7 @@
                                     &nbsp;
                                     <asp:CustomValidator ID="CusVal_txtDiamPKpT" runat="server"
                                         ClientValidationFunction="ValidateNumberOvalPK" ControlToValidate="txtDiamPKpT"
-                                        ErrorMessage="Ошибка" Font-Size="Smaller" ValidateEmptyText="True"></asp:CustomValidator>
+                                        ErrorMessage="ГЋГёГЁГЎГЄГ " Font-Size="Smaller" ValidateEmptyText="True"></asp:CustomValidator>
                                 </td>
                                 <td style="text-align: left; width: 900px; font-size: 12pt;">
                                     <asp:TextBox ID="txtDiamPKpSH" runat="server" MaxLength="6" TabIndex="4"
@@ -538,7 +429,7 @@
                                     &nbsp;
                                     <asp:CustomValidator ID="CusVal_txtDiamPKpSH" runat="server"
                                         ClientValidationFunction="ValidateNumberOvalPK" ControlToValidate="txtDiamPKpSH"
-                                        ErrorMessage="Ошибка" Font-Size="Smaller" ValidateEmptyText="True"></asp:CustomValidator>
+                                        ErrorMessage="ГЋГёГЁГЎГЄГ " Font-Size="Smaller" ValidateEmptyText="True"></asp:CustomValidator>
                                 </td>
                                 <td style="width: 900px; text-align: left; font-size: 12pt; color: #000000;">
                                     <asp:TextBox ID="txtOvalPK" runat="server" MaxLength="4" ReadOnly="true"
@@ -557,16 +448,16 @@
                             <tr style="font-size: 10pt; color: #000000">
                                 <td style="text-align: left" colspan="2">
                                     <img src="Images/CX.png" />
-                                    Диаметр локальный по заднему концу трубы, мм</td>
-                                <td style="width: 900px; text-align: left" rowspan="2">Овальность по заднему
+                                    Г„ГЁГ Г¬ГҐГІГ° Г«Г®ГЄГ Г«ГјГ­Г»Г© ГЇГ® Г§Г Г¤Г­ГҐГ¬Гі ГЄГ®Г­Г¶Гі ГІГ°ГіГЎГ», Г¬Г¬</td>
+                                <td style="width: 900px; text-align: left" rowspan="2">ГЋГўГ Г«ГјГ­Г®Г±ГІГј ГЇГ® Г§Г Г¤Г­ГҐГ¬Гі
                                     <br />
-                                    концу трубы, мм
+                                    ГЄГ®Г­Г¶Гі ГІГ°ГіГЎГ», Г¬Г¬
                                 </td>
                                 <td style="width: 900px; text-align: left" rowspan="2"></td>
                             </tr>
                             <tr style="font-size: 10pt; color: #000000">
-                                <td style="text-align: left; width: 900px;">минимальный</td>
-                                <td style="text-align: left; width: 900px;">максимальный</td>
+                                <td style="text-align: left; width: 900px;">Г¬ГЁГ­ГЁГ¬Г Г«ГјГ­Г»Г©</td>
+                                <td style="text-align: left; width: 900px;">Г¬Г ГЄГ±ГЁГ¬Г Г«ГјГ­Г»Г©</td>
                             </tr>
                             <tr style="font-size: 12pt">
                                 <td style="text-align: left; width: 900px; font-size: 12pt; color: #000000; height: 29px;">
@@ -575,7 +466,7 @@
                                     &nbsp;
                                     <asp:CustomValidator ID="CusVal_txtDiamZKpT" runat="server"
                                         ClientValidationFunction="ValidateNumberOvalZK" ControlToValidate="txtDiamZKpT"
-                                        ErrorMessage="Ошибка" Font-Size="Smaller" ValidateEmptyText="True"></asp:CustomValidator>
+                                        ErrorMessage="ГЋГёГЁГЎГЄГ " Font-Size="Smaller" ValidateEmptyText="True"></asp:CustomValidator>
                                 </td>
                                 <td style="text-align: left; width: 900px; height: 29px;">
                                     <asp:TextBox ID="txtDiamZKpSH" runat="server" MaxLength="6" TabIndex="6"
@@ -583,7 +474,7 @@
                                     &nbsp;
                                     <asp:CustomValidator ID="CusVal_txtDiamZKpSH" runat="server"
                                         ClientValidationFunction="ValidateNumberOvalZK" ControlToValidate="txtDiamZKpSH"
-                                        ErrorMessage="Ошибка" Font-Size="Smaller" ValidateEmptyText="True"></asp:CustomValidator>
+                                        ErrorMessage="ГЋГёГЁГЎГЄГ " Font-Size="Smaller" ValidateEmptyText="True"></asp:CustomValidator>
                                 </td>
                                 <td style="width: 900px; text-align: left; font-size: 12pt; color: #000000; vertical-align: middle; height: 29px;">
                                     <asp:TextBox ID="txtOvalZK" runat="server" MaxLength="4" ReadOnly="True"
@@ -602,16 +493,16 @@
                             <tr style="color: #000000">
                                 <td style="font-size: 10pt; text-align: left" colspan="2">
                                     <img src="Images/CX.png" />
-                                    Диаметр локальный по телу трубы, мм</td>
-                                <td style="width: 900px; text-align: left;" rowspan="2">Овальность по телу
+                                    Г„ГЁГ Г¬ГҐГІГ° Г«Г®ГЄГ Г«ГјГ­Г»Г© ГЇГ® ГІГҐГ«Гі ГІГ°ГіГЎГ», Г¬Г¬</td>
+                                <td style="width: 900px; text-align: left;" rowspan="2">ГЋГўГ Г«ГјГ­Г®Г±ГІГј ГЇГ® ГІГҐГ«Гі
                                     <br />
-                                    трубы, мм
+                                    ГІГ°ГіГЎГ», Г¬Г¬
                                 </td>
                                 <td style="width: 900px; text-align: left;" rowspan="2"></td>
                             </tr>
                             <tr style="color: #000000">
-                                <td style="font-size: 10pt; text-align: left; width: 900px;">минимальный</td>
-                                <td style="text-align: left; width: 900px;">максимальный</td>
+                                <td style="font-size: 10pt; text-align: left; width: 900px;">Г¬ГЁГ­ГЁГ¬Г Г«ГјГ­Г»Г©</td>
+                                <td style="text-align: left; width: 900px;">Г¬Г ГЄГ±ГЁГ¬Г Г«ГјГ­Г»Г©</td>
                             </tr>
                             <tr>
                                 <td style="text-align: left; font-size: 12pt; width: 900px; color: #000000;">
@@ -620,14 +511,14 @@
                                     &nbsp;
                                     <asp:CustomValidator ID="CusVal_txtDiamTpT" runat="server"
                                         ClientValidationFunction="ValidateNumberOvalT" ControlToValidate="txtDiamTpT"
-                                        ErrorMessage="Ошибка" Font-Size="Smaller" ValidateEmptyText="True"></asp:CustomValidator>
+                                        ErrorMessage="ГЋГёГЁГЎГЄГ " Font-Size="Smaller" ValidateEmptyText="True"></asp:CustomValidator>
                                 </td>
                                 <td style="text-align: left; width: 900px;">
                                     <asp:TextBox ID="txtDiamTpSH" runat="server" MaxLength="6" TabIndex="8"
                                         Width="180px" AutoPostBack="True" OnTextChanged="txtOvalT_SelectedIndexChanged"></asp:TextBox>
                                     &nbsp; &nbsp;<asp:CustomValidator ID="CusVal_txtDiamTpSH" runat="server"
                                         ClientValidationFunction="ValidateNumberOvalT" ControlToValidate="txtDiamTpSH"
-                                        ErrorMessage="Ошибка" Font-Size="Smaller" ValidateEmptyText="True"></asp:CustomValidator>
+                                        ErrorMessage="ГЋГёГЁГЎГЄГ " Font-Size="Smaller" ValidateEmptyText="True"></asp:CustomValidator>
                                 </td>
                                 <td style="text-align: left; font-size: 12pt; width: 900px; color: #000000;">
                                     <asp:TextBox ID="txtOvalT" runat="server" MaxLength="4" ReadOnly="True"
@@ -643,11 +534,11 @@
                                 <td style="text-align: left; font-size: 10px; width: 900px;"></td>
                             </tr>
                             <tr>
-                                <td style="font-size: 10pt; text-align: left; width: 900px;">Диаметр по переднему<br />
-                                    концу, мм</td>
-                                <td style="text-align: left; width: 900px;">Диаметр по заднему<br />
-                                    концу, мм</td>
-                                <td style="text-align: left; width: 900px;">Диаметр по телу, мм</td>
+                                <td style="font-size: 10pt; text-align: left; width: 900px;">Г„ГЁГ Г¬ГҐГІГ° ГЇГ® ГЇГҐГ°ГҐГ¤Г­ГҐГ¬Гі<br />
+                                    ГЄГ®Г­Г¶Гі, Г¬Г¬</td>
+                                <td style="text-align: left; width: 900px;">Г„ГЁГ Г¬ГҐГІГ° ГЇГ® Г§Г Г¤Г­ГҐГ¬Гі<br />
+                                    ГЄГ®Г­Г¶Гі, Г¬Г¬</td>
+                                <td style="text-align: left; width: 900px;">Г„ГЁГ Г¬ГҐГІГ° ГЇГ® ГІГҐГ«Гі, Г¬Г¬</td>
                                 <td style="text-align: left; width: 900px;"></td>
                             </tr>
                             <tr>
@@ -656,7 +547,7 @@
                                         TabIndex="9" Width="180px"></asp:TextBox>
                                     &nbsp; &nbsp;<asp:CustomValidator ID="CusVal_txtDiametrOnFrontEnd" runat="server"
                                         ClientValidationFunction="fncClientValidation"
-                                        ControlToValidate="txtDiametrOnFrontEnd" ErrorMessage="Ошибка"
+                                        ControlToValidate="txtDiametrOnFrontEnd" ErrorMessage="ГЋГёГЁГЎГЄГ "
                                         Font-Size="Smaller"></asp:CustomValidator>
                                     &nbsp;</td>
                                 <td style="text-align: left; width: 900px;">
@@ -665,14 +556,14 @@
                                     &nbsp;
                                     <asp:CustomValidator ID="CusVal_txtDiametrOnBackEnd" runat="server"
                                         ClientValidationFunction="fncClientValidation"
-                                        ControlToValidate="txtDiametrOnBackEnd" ErrorMessage="Ошибка"
+                                        ControlToValidate="txtDiametrOnBackEnd" ErrorMessage="ГЋГёГЁГЎГЄГ "
                                         Font-Size="Smaller"></asp:CustomValidator></td>
                                 <td style="text-align: left; width: 900px;">
                                     <asp:TextBox ID="txtDiametrOnBody" runat="server" MaxLength="8"
                                         TabIndex="11" Width="180px"></asp:TextBox>
                                     &nbsp; &nbsp;<asp:CustomValidator ID="CusVal_txtDiametrOnBodyEnd" runat="server"
                                         ClientValidationFunction="fncClientValidation"
-                                        ControlToValidate="txtDiametrOnBody" ErrorMessage="Ошибка"
+                                        ControlToValidate="txtDiametrOnBody" ErrorMessage="ГЋГёГЁГЎГЄГ "
                                         Font-Size="Smaller"></asp:CustomValidator></td>
                                 <td style="text-align: left; width: 900px;"></td>
                             </tr>
@@ -683,12 +574,12 @@
                                 <td colspan="4" rowspan="" style="border-top: gray thin solid; font-size: 4px">&nbsp;<!--  --></td>
                             </tr>
                             <tr>
-                                <td style="font-size: 10pt; text-align: left; width: 900px;">Длина трубы, м</td>
+                                <td style="font-size: 10pt; text-align: left; width: 900px;">Г„Г«ГЁГ­Г  ГІГ°ГіГЎГ», Г¬</td>
                                 <td style="text-align: left; width: 900px;">
                                     <img src="Images/CX.png" />
-                                    Толщина стенки, мм<br />
-                                    (замер 1 / замер 2)</td>
-                                <td style="text-align: left; width: 900px;">Смещение кромок трубы, мм</td>
+                                    Г’Г®Г«Г№ГЁГ­Г  Г±ГІГҐГ­ГЄГЁ, Г¬Г¬<br />
+                                    (Г§Г Г¬ГҐГ° 1 / Г§Г Г¬ГҐГ° 2)</td>
+                                <td style="text-align: left; width: 900px;">Г‘Г¬ГҐГ№ГҐГ­ГЁГҐ ГЄГ°Г®Г¬Г®ГЄ ГІГ°ГіГЎГ», Г¬Г¬</td>
                                 <td style="text-align: left; width: 900px;"></td>
                             </tr>
                             <tr>
@@ -697,7 +588,7 @@
                                         Width="180px"></asp:TextBox>
                                     &nbsp; &nbsp;<asp:CustomValidator ID="CusVal_txtDlina" runat="server"
                                         ClientValidationFunction="fncClientValidation" ControlToValidate="txtDlina"
-                                        ErrorMessage="Ошибка" Font-Size="Smaller"></asp:CustomValidator>
+                                        ErrorMessage="ГЋГёГЁГЎГЄГ " Font-Size="Smaller"></asp:CustomValidator>
                                 </td>
                                 <td style="text-align: left; font-size: 12pt; width: 900px; color: #000000;">
                                     <table style="font-size: 10pt; border-collapse: collapse">
@@ -716,7 +607,7 @@
                                             <td>
                                                 <asp:CustomValidator ID="CusVal_txtTolSten" runat="server"
                                                     ClientValidationFunction="fncClientValidation" ControlToValidate="txtTolSten"
-                                                    ErrorMessage="Ошибка" Font-Size="Smaller"></asp:CustomValidator>
+                                                    ErrorMessage="ГЋГёГЁГЎГЄГ " Font-Size="Smaller"></asp:CustomValidator>
                                             </td>
                                             <td>&nbsp;</td>
                                             <td>&nbsp;</td>
@@ -729,7 +620,7 @@
                                     &nbsp;
                                     <asp:CustomValidator ID="CusVal_txtSmeschKrom" runat="server"
                                         ClientValidationFunction="fncClientValidation"
-                                        ControlToValidate="txtSmeschKrom" ErrorMessage="Ошибка" Font-Size="Smaller"></asp:CustomValidator>
+                                        ControlToValidate="txtSmeschKrom" ErrorMessage="ГЋГёГЁГЎГЄГ " Font-Size="Smaller"></asp:CustomValidator>
                                 </td>
                                 <td style="text-align: left; font-size: 12pt; width: 900px; color: #000000;"></td>
                             </tr>
@@ -740,12 +631,12 @@
                                 <td style="text-align: left; font-size: 10px; width: 900px; height: 3px;"></td>
                             </tr>
                             <tr style="font-size: 10pt; color: #000000">
-                                <td style="text-align: left; width: 900px;">Косина реза
+                                <td style="text-align: left; width: 900px;">ГЉГ®Г±ГЁГ­Г  Г°ГҐГ§Г 
                                     <br />
-                                    (передний торец), мм</td>
-                                <td style="text-align: left; width: 900px;">Косина реза
+                                    (ГЇГҐГ°ГҐГ¤Г­ГЁГ© ГІГ®Г°ГҐГ¶), Г¬Г¬</td>
+                                <td style="text-align: left; width: 900px;">ГЉГ®Г±ГЁГ­Г  Г°ГҐГ§Г 
                                     <br />
-                                    (задний торец), мм</td>
+                                    (Г§Г Г¤Г­ГЁГ© ГІГ®Г°ГҐГ¶), Г¬Г¬</td>
                                 <td style="text-align: left; width: 900px;"></td>
                                 <td style="text-align: left; width: 900px;"></td>
                             </tr>
@@ -756,7 +647,7 @@
                                     &nbsp;
                                     <asp:CustomValidator ID="CusVal_txtKosinaPTor" runat="server"
                                         ClientValidationFunction="fncClientValidation"
-                                        ControlToValidate="txtKosinaPTor" ErrorMessage="Ошибка" Font-Size="Smaller"></asp:CustomValidator>
+                                        ControlToValidate="txtKosinaPTor" ErrorMessage="ГЋГёГЁГЎГЄГ " Font-Size="Smaller"></asp:CustomValidator>
                                 </td>
                                 <td style="text-align: left; font-size: 12pt; width: 900px; color: #000000;">
                                     <asp:TextBox ID="txtKosinaZTor" runat="server" MaxLength="3" TabIndex="17"
@@ -764,7 +655,7 @@
                                     &nbsp;
                                     <asp:CustomValidator ID="CusVal_txtKosinaZTor" runat="server"
                                         ClientValidationFunction="fncClientValidation"
-                                        ControlToValidate="txtKosinaZTor" ErrorMessage="Ошибка" Font-Size="Smaller"></asp:CustomValidator>
+                                        ControlToValidate="txtKosinaZTor" ErrorMessage="ГЋГёГЁГЎГЄГ " Font-Size="Smaller"></asp:CustomValidator>
                                 </td>
                                 <td style="text-align: left; font-size: 12pt; width: 900px; color: #000000;"></td>
                                 <td style="text-align: left; font-size: 12pt; width: 900px; color: #000000;"></td>
@@ -776,12 +667,12 @@
                                 <td style="text-align: left; font-size: 10px; width: 900px; height: 3px;"></td>
                             </tr>
                             <tr style="font-size: 10pt; color: #000000">
-                                <td style="text-align: left; width: 900px;">Кривизна на 1 м
+                                <td style="text-align: left; width: 900px;">ГЉГ°ГЁГўГЁГ§Г­Г  Г­Г  1 Г¬
                                     <br />
-                                    трубы, мм</td>
-                                <td style="text-align: left; width: 900px;">Кривизна трубы по всей
+                                    ГІГ°ГіГЎГ», Г¬Г¬</td>
+                                <td style="text-align: left; width: 900px;">ГЉГ°ГЁГўГЁГ§Г­Г  ГІГ°ГіГЎГ» ГЇГ® ГўГ±ГҐГ©
                                     <br />
-                                    длине, мм</td>
+                                    Г¤Г«ГЁГ­ГҐ, Г¬Г¬</td>
                                 <td style="text-align: left; width: 900px;"></td>
                                 <td style="text-align: left; width: 900px;"></td>
                             </tr>
@@ -792,7 +683,7 @@
                                     &nbsp;
                                     <asp:CustomValidator ID="CusVal_txtKrivizna1mT" runat="server"
                                         ClientValidationFunction="fncClientValidation"
-                                        ControlToValidate="txtKrivizna1mT" ErrorMessage="Ошибка" Font-Size="Smaller"></asp:CustomValidator>
+                                        ControlToValidate="txtKrivizna1mT" ErrorMessage="ГЋГёГЁГЎГЄГ " Font-Size="Smaller"></asp:CustomValidator>
                                 </td>
                                 <td style="text-align: left; font-size: 12pt; width: 900px; color: #000000;">
                                     <asp:TextBox ID="txtKriviznaVciaT" runat="server" MaxLength="4" TabIndex="19"
@@ -800,7 +691,7 @@
                                     &nbsp;
                                     <asp:CustomValidator ID="CusVal_txtKriviznaVciaT" runat="server"
                                         ClientValidationFunction="fncClientValidation"
-                                        ControlToValidate="txtKriviznaVciaT" ErrorMessage="Ошибка" Font-Size="Smaller"></asp:CustomValidator>
+                                        ControlToValidate="txtKriviznaVciaT" ErrorMessage="ГЋГёГЁГЎГЄГ " Font-Size="Smaller"></asp:CustomValidator>
                                 </td>
                                 <td style="text-align: left; font-size: 12pt; width: 900px; color: #000000;"></td>
                                 <td style="text-align: left; font-size: 12pt; width: 900px; color: #000000;"></td>
@@ -812,12 +703,12 @@
                                 <td style="text-align: left; height: 3px; font-size: 10px; width: 900px;"></td>
                             </tr>
                             <tr style="font-size: 10pt; color: #000000">
-                                <td style="text-align: left; width: 900px;">Остаток внутреннего
+                                <td style="text-align: left; width: 900px;">ГЋГ±ГІГ ГІГ®ГЄ ГўГ­ГіГІГ°ГҐГ­Г­ГҐГЈГ®
                                     <br />
-                                    грата, мм</td>
-                                <td style="text-align: left; width: 900px;">Остаток наружного
+                                    ГЈГ°Г ГІГ , Г¬Г¬</td>
+                                <td style="text-align: left; width: 900px;">ГЋГ±ГІГ ГІГ®ГЄ Г­Г Г°ГіГ¦Г­Г®ГЈГ®
                                     <br />
-                                    грата, мм</td>
+                                    ГЈГ°Г ГІГ , Г¬Г¬</td>
                                 <td style="text-align: left; width: 900px;"></td>
                                 <td style="text-align: left; width: 900px;"></td>
                             </tr>
@@ -828,7 +719,7 @@
                                     &nbsp;
                                     <asp:CustomValidator ID="CusVal_txtOstatokVnutGrata" runat="server"
                                         ClientValidationFunction="fncClientValidation"
-                                        ControlToValidate="txtOstatokVnutGrata" ErrorMessage="Ошибка"
+                                        ControlToValidate="txtOstatokVnutGrata" ErrorMessage="ГЋГёГЁГЎГЄГ "
                                         Font-Size="Smaller"></asp:CustomValidator>
                                 </td>
                                 <td style="text-align: left; width: 900px;">
@@ -837,13 +728,13 @@
                                     &nbsp;
                                     <asp:CustomValidator ID="CusVal_txtOstatokNarujGrata" runat="server"
                                         ClientValidationFunction="fncClientValidation"
-                                        ControlToValidate="txtOstatokNarujGrata" ErrorMessage="Ошибка"
+                                        ControlToValidate="txtOstatokNarujGrata" ErrorMessage="ГЋГёГЁГЎГЄГ "
                                         Font-Size="Smaller"></asp:CustomValidator>
                                 </td>
                                 <td style="text-align: left; width: 900px;"></td>
                                 <td style="text-align: left; width: 900px;"></td>
                             </tr>
-                            <%-- Добавлены новые поля 05.10.17 Романов С.А.--%>
+                            <%-- Г„Г®ГЎГ ГўГ«ГҐГ­Г» Г­Г®ГўГ»ГҐ ГЇГ®Г«Гї 05.10.17 ГђГ®Г¬Г Г­Г®Гў Г‘.ГЂ.--%>
                             <tr>
                                 <td style="text-align: left; font-size: 10px; width: 900px;"></td>
                                 <td style="text-align: left; font-size: 10px; width: 900px;"></td>
@@ -851,14 +742,14 @@
                                 <td style="text-align: left; font-size: 10px; width: 900px;"></td>
                             </tr>
                             <tr>
-                                <td style="font-size: 10pt; text-align: left" colspan="2">Угол скоса фаски передний торец, град</td>
-                                <td style="text-align: left" colspan="2">Угол скоса фаски задний торец, град</td>
+                                <td style="font-size: 10pt; text-align: left" colspan="2">Г“ГЈГ®Г« Г±ГЄГ®Г±Г  ГґГ Г±ГЄГЁ ГЇГҐГ°ГҐГ¤Г­ГЁГ© ГІГ®Г°ГҐГ¶, ГЈГ°Г Г¤</td>
+                                <td style="text-align: left" colspan="2">Г“ГЈГ®Г« Г±ГЄГ®Г±Г  ГґГ Г±ГЄГЁ Г§Г Г¤Г­ГЁГ© ГІГ®Г°ГҐГ¶, ГЈГ°Г Г¤</td>
                             </tr>
                             <tr>
-                                <td style="font-size: 10pt; text-align: left; width: 900px;">минимальный</td>
-                                <td style="text-align: left; width: 900px;">максимальный</td>
-                                <td style="font-size: 10pt; text-align: left; width: 900px;">минимальный</td>
-                                <td style="text-align: left; width: 900px;">максимальный</td>
+                                <td style="font-size: 10pt; text-align: left; width: 900px;">Г¬ГЁГ­ГЁГ¬Г Г«ГјГ­Г»Г©</td>
+                                <td style="text-align: left; width: 900px;">Г¬Г ГЄГ±ГЁГ¬Г Г«ГјГ­Г»Г©</td>
+                                <td style="font-size: 10pt; text-align: left; width: 900px;">Г¬ГЁГ­ГЁГ¬Г Г«ГјГ­Г»Г©</td>
+                                <td style="text-align: left; width: 900px;">Г¬Г ГЄГ±ГЁГ¬Г Г«ГјГ­Г»Г©</td>
                             </tr>
                             <tr>
                                 <td style="text-align: left; width: 900px;">
@@ -866,7 +757,7 @@
                                         TabIndex="22" Width="180px"></asp:TextBox>
                                     &nbsp; &nbsp;<asp:CustomValidator ID="CusVal_txtYgolSkosaFaskiPTorMin" runat="server"
                                         ClientValidationFunction="fncClientValidation"
-                                        ControlToValidate="txtYgolSkosaFaskiPTorMin" ErrorMessage="Ошибка"
+                                        ControlToValidate="txtYgolSkosaFaskiPTorMin" ErrorMessage="ГЋГёГЁГЎГЄГ "
                                         Font-Size="Smaller"></asp:CustomValidator>
                                     &nbsp;
                                 </td>
@@ -876,7 +767,7 @@
                                     &nbsp;
                                     <asp:CustomValidator ID="CusVal_txtYgolSkosaFaskiPTorMax" runat="server"
                                         ClientValidationFunction="fncClientValidation"
-                                        ControlToValidate="txtYgolSkosaFaskiPTorMax" ErrorMessage="Ошибка"
+                                        ControlToValidate="txtYgolSkosaFaskiPTorMax" ErrorMessage="ГЋГёГЁГЎГЄГ "
                                         Font-Size="Smaller"></asp:CustomValidator>
                                 </td>
                                 <td style="text-align: left; width: 900px;">
@@ -885,7 +776,7 @@
                                     &nbsp;
                                     <asp:CustomValidator ID="CusVal_txtYgolSkosaFaskiZTorMin" runat="server"
                                         ClientValidationFunction="fncClientValidation"
-                                        ControlToValidate="txtYgolSkosaFaskiZTorMin" ErrorMessage="Ошибка"
+                                        ControlToValidate="txtYgolSkosaFaskiZTorMin" ErrorMessage="ГЋГёГЁГЎГЄГ "
                                         Font-Size="Smaller"></asp:CustomValidator>
                                 </td>
                                 <td style="text-align: left; width: 900px;">
@@ -894,7 +785,7 @@
                                     &nbsp;
                                     <asp:CustomValidator ID="CusVal_txtYgolSkosaFaskiZTorMax" runat="server"
                                         ClientValidationFunction="fncClientValidation"
-                                        ControlToValidate="txtYgolSkosaFaskiZTorMax" ErrorMessage="Ошибка"
+                                        ControlToValidate="txtYgolSkosaFaskiZTorMax" ErrorMessage="ГЋГёГЁГЎГЄГ "
                                         Font-Size="Smaller"></asp:CustomValidator>
                                     &nbsp;
                                 </td>
@@ -906,14 +797,14 @@
                                 <td style="text-align: left; font-size: 10px; width: 900px;"></td>
                             </tr>
                             <tr>
-                                <td style="font-size: 10pt; text-align: left; height: 20px;" colspan="2">Ширина торцевого кольца передний торец, мм</td>
-                                <td style="text-align: left; height: 20px;" colspan="2">Ширина торцевого кольца задний торец, мм</td>
+                                <td style="font-size: 10pt; text-align: left; height: 20px;" colspan="2">ГГЁГ°ГЁГ­Г  ГІГ®Г°Г¶ГҐГўГ®ГЈГ® ГЄГ®Г«ГјГ¶Г  ГЇГҐГ°ГҐГ¤Г­ГЁГ© ГІГ®Г°ГҐГ¶, Г¬Г¬</td>
+                                <td style="text-align: left; height: 20px;" colspan="2">ГГЁГ°ГЁГ­Г  ГІГ®Г°Г¶ГҐГўГ®ГЈГ® ГЄГ®Г«ГјГ¶Г  Г§Г Г¤Г­ГЁГ© ГІГ®Г°ГҐГ¶, Г¬Г¬</td>
                             </tr>
                             <tr>
-                                <td style="font-size: 10pt; text-align: left; width: 900px;">минимальный</td>
-                                <td style="text-align: left; width: 900px;">максимальный</td>
-                                <td style="font-size: 10pt; text-align: left; width: 900px;">минимальный</td>
-                                <td style="text-align: left; width: 900px;">максимальный</td>
+                                <td style="font-size: 10pt; text-align: left; width: 900px;">Г¬ГЁГ­ГЁГ¬Г Г«ГјГ­Г»Г©</td>
+                                <td style="text-align: left; width: 900px;">Г¬Г ГЄГ±ГЁГ¬Г Г«ГјГ­Г»Г©</td>
+                                <td style="font-size: 10pt; text-align: left; width: 900px;">Г¬ГЁГ­ГЁГ¬Г Г«ГјГ­Г»Г©</td>
+                                <td style="text-align: left; width: 900px;">Г¬Г ГЄГ±ГЁГ¬Г Г«ГјГ­Г»Г©</td>
                             </tr>
                             <tr>
                                 <td style="text-align: left; width: 900px;">
@@ -921,7 +812,7 @@
                                         TabIndex="26" Width="180px"></asp:TextBox>
                                     &nbsp; &nbsp;<asp:CustomValidator ID="CusVal_txtShirinaTorKolPTorMin" runat="server"
                                         ClientValidationFunction="fncClientValidation"
-                                        ControlToValidate="txtShirinaTorKolPTorMin" ErrorMessage="Ошибка"
+                                        ControlToValidate="txtShirinaTorKolPTorMin" ErrorMessage="ГЋГёГЁГЎГЄГ "
                                         Font-Size="Smaller"></asp:CustomValidator>
 
                                 </td>
@@ -931,7 +822,7 @@
                                     &nbsp;
                                     <asp:CustomValidator ID="CusVal_txtShirinaTorKolPTorMax" runat="server"
                                         ClientValidationFunction="fncClientValidation"
-                                        ControlToValidate="txtShirinaTorKolPTorMax" ErrorMessage="Ошибка"
+                                        ControlToValidate="txtShirinaTorKolPTorMax" ErrorMessage="ГЋГёГЁГЎГЄГ "
                                         Font-Size="Smaller"></asp:CustomValidator>
                                 </td>
                                 <td style="text-align: left; width: 900px;">
@@ -940,7 +831,7 @@
                                     &nbsp;
                                     <asp:CustomValidator ID="CusVal_txtShirinaTorKolZTorMin" runat="server"
                                         ClientValidationFunction="fncClientValidation"
-                                        ControlToValidate="txtShirinaTorKolZTorMin" ErrorMessage="Ошибка"
+                                        ControlToValidate="txtShirinaTorKolZTorMin" ErrorMessage="ГЋГёГЁГЎГЄГ "
                                         Font-Size="Smaller"></asp:CustomValidator>
                                 </td>
                                 <td style="text-align: left; width: 900px;">
@@ -948,7 +839,7 @@
                                         TabIndex="29" Width="180px"></asp:TextBox>
                                     &nbsp; &nbsp;<asp:CustomValidator ID="CusVal_txtShirinaTorKolZTorMax" runat="server"
                                         ClientValidationFunction="fncClientValidation"
-                                        ControlToValidate="txtShirinaTorKolZTorMax" ErrorMessage="Ошибка"
+                                        ControlToValidate="txtShirinaTorKolZTorMax" ErrorMessage="ГЋГёГЁГЎГЄГ "
                                         Font-Size="Smaller"></asp:CustomValidator>
                                     &nbsp;
                                 </td>
@@ -960,14 +851,14 @@
                                 <td style="text-align: left; font-size: 10px; width: 900px;"></td>
                             </tr>
                             <tr>
-                                <td style="font-size: 10pt; text-align: left" colspan="2">Кривизна концевая передний конец трубы, мм</td>
-                                <td style="font-size: 10pt; text-align: left" colspan="2">Кривизна концевая задний конец трубы, мм</td>
+                                <td style="font-size: 10pt; text-align: left" colspan="2">ГЉГ°ГЁГўГЁГ§Г­Г  ГЄГ®Г­Г¶ГҐГўГ Гї ГЇГҐГ°ГҐГ¤Г­ГЁГ© ГЄГ®Г­ГҐГ¶ ГІГ°ГіГЎГ», Г¬Г¬</td>
+                                <td style="font-size: 10pt; text-align: left" colspan="2">ГЉГ°ГЁГўГЁГ§Г­Г  ГЄГ®Г­Г¶ГҐГўГ Гї Г§Г Г¤Г­ГЁГ© ГЄГ®Г­ГҐГ¶ ГІГ°ГіГЎГ», Г¬Г¬</td>
                             </tr>
                             <tr>
-                                <td style="font-size: 10pt; text-align: left; width: 900px;">на 1 метре</td>
-                                <td style="text-align: left; width: 900px;">на 1,5 метрах</td>
-                                <td style="font-size: 10pt; text-align: left; width: 900px;">на 1 метре</td>
-                                <td style="text-align: left; width: 900px;">на 1,5 метрах</td>
+                                <td style="font-size: 10pt; text-align: left; width: 900px;">Г­Г  1 Г¬ГҐГІГ°ГҐ</td>
+                                <td style="text-align: left; width: 900px;">Г­Г  1,5 Г¬ГҐГІГ°Г Гµ</td>
+                                <td style="font-size: 10pt; text-align: left; width: 900px;">Г­Г  1 Г¬ГҐГІГ°ГҐ</td>
+                                <td style="text-align: left; width: 900px;">Г­Г  1,5 Г¬ГҐГІГ°Г Гµ</td>
                             </tr>
                             <tr>
                                 <td style="text-align: left; width: 900px;">
@@ -975,7 +866,7 @@
                                         TabIndex="30" Width="180px"></asp:TextBox>
                                     &nbsp; &nbsp;<asp:CustomValidator ID="CusVal_txtCURVATURE_FRONT_END_1000MM" runat="server"
                                         ClientValidationFunction="fncClientValidation"
-                                        ControlToValidate="txtCURVATURE_FRONT_END_1000MM" ErrorMessage="Ошибка"
+                                        ControlToValidate="txtCURVATURE_FRONT_END_1000MM" ErrorMessage="ГЋГёГЁГЎГЄГ "
                                         Font-Size="Smaller"></asp:CustomValidator>
                                     &nbsp;
                                 </td>
@@ -984,7 +875,7 @@
                                         TabIndex="31" Width="180px"></asp:TextBox>
                                     &nbsp; &nbsp;<asp:CustomValidator ID="CusVal_txtCURVATURE_FRONT_END_1500MM" runat="server"
                                         ClientValidationFunction="fncClientValidation"
-                                        ControlToValidate="txtCURVATURE_FRONT_END_1500MM" ErrorMessage="Ошибка"
+                                        ControlToValidate="txtCURVATURE_FRONT_END_1500MM" ErrorMessage="ГЋГёГЁГЎГЄГ "
                                         Font-Size="Smaller"></asp:CustomValidator>
                                     &nbsp;
                                 </td>
@@ -993,7 +884,7 @@
                                         TabIndex="32" Width="180px"></asp:TextBox>
                                     &nbsp; &nbsp;<asp:CustomValidator ID="CusVal_CURVATURE_BACK_END_1000MM" runat="server"
                                         ClientValidationFunction="fncClientValidation"
-                                        ControlToValidate="CURVATURE_BACK_END_1000MM" ErrorMessage="Ошибка"
+                                        ControlToValidate="CURVATURE_BACK_END_1000MM" ErrorMessage="ГЋГёГЁГЎГЄГ "
                                         Font-Size="Smaller"></asp:CustomValidator>
                                     &nbsp;
                                 </td>
@@ -1002,7 +893,7 @@
                                         TabIndex="33" Width="180px"></asp:TextBox>
                                     &nbsp; &nbsp;<asp:CustomValidator ID="CusVal_CURVATURE_BACK_END_1500MM" runat="server"
                                         ClientValidationFunction="fncClientValidation"
-                                        ControlToValidate="CURVATURE_BACK_END_1500MM" ErrorMessage="Ошибка"
+                                        ControlToValidate="CURVATURE_BACK_END_1500MM" ErrorMessage="ГЋГёГЁГЎГЄГ "
                                         Font-Size="Smaller"></asp:CustomValidator>
                                     &nbsp;
                                 </td>
@@ -1014,21 +905,21 @@
                                 <td style="text-align: left; font-size: 10px; width: 900px;"></td>
                             </tr>
                             <tr>
-                                <td style="text-align: left; width: 900px;">Состояние наружной поверхности:</td>
+                                <td style="text-align: left; width: 900px;">Г‘Г®Г±ГІГ®ГїГ­ГЁГҐ Г­Г Г°ГіГ¦Г­Г®Г© ГЇГ®ГўГҐГ°ГµГ­Г®Г±ГІГЁ:</td>
                                 <td colspan="3" style="text-align: left;">
                                     <asp:DropDownList ID="ddlOuterDefect" runat="server" TabIndex="34">
                                     </asp:DropDownList>
                                 </td>
                             </tr>
                             <tr>
-                                <td style="text-align: left; width: 900px;">Состояние внутренней поверхности:</td>
+                                <td style="text-align: left; width: 900px;">Г‘Г®Г±ГІГ®ГїГ­ГЁГҐ ГўГ­ГіГІГ°ГҐГ­Г­ГҐГ© ГЇГ®ГўГҐГ°ГµГ­Г®Г±ГІГЁ:</td>
                                 <td colspan="3" style="text-align: left;">
                                     <asp:DropDownList ID="ddlInnerDefect" runat="server" TabIndex="35">
                                     </asp:DropDownList>
                                 </td>
                             </tr>
                             <tr>
-                                <td style="text-align: left; width: 900px;">Заусенцы на торцах:</td>
+                                <td style="text-align: left; width: 900px;">Г‡Г ГіГ±ГҐГ­Г¶Г» Г­Г  ГІГ®Г°Г¶Г Гµ:</td>
                                 <td colspan="3" style="text-align: left;">
                                     <asp:DropDownList ID="ddlEndDefect" runat="server" TabIndex="36">
                                     </asp:DropDownList>
@@ -1042,10 +933,10 @@
                             </tr>
                         </table>
                         <asp:Button ID="btnSave" runat="server" Height="23px" OnClick="btnSave_Click"
-                            OnClientClick="return fncSave(this);" TabIndex="37" Text="Сохранить"
+                            OnClientClick="return fncSave(this);" TabIndex="37" Text="Г‘Г®ГµГ°Г Г­ГЁГІГј"
                             UseSubmitBehavior="False" Width="109px" Font-Size="10pt" />
                         <asp:Button ID="btnBack" runat="server" Height="23px" OnClick="btnBack_Click"
-                            TabIndex="38" Text="Отмена" UseSubmitBehavior="False" Width="110px"
+                            TabIndex="38" Text="ГЋГІГ¬ГҐГ­Г " UseSubmitBehavior="False" Width="110px"
                             Font-Size="10pt" />
                     </td>
                 </tr>
@@ -1055,9 +946,9 @@
             <table>
                 <tr>
                     <td style="width: 667px; height: 28px; vertical-align: middle; text-align: left;">
-                        <font size="2">Данные успешно сохранены</font>&nbsp; &nbsp;<asp:Button
+                        <font size="2">Г„Г Г­Г­Г»ГҐ ГіГ±ГЇГҐГёГ­Г® Г±Г®ГµГ°Г Г­ГҐГ­Г»</font>&nbsp; &nbsp;<asp:Button
                             ID="btnContinue" runat="server" Height="23px" OnClick="btnContinue_Click"
-                            TabIndex="1" Text="Продолжить" Font-Size="10pt" />
+                            TabIndex="1" Text="ГЏГ°Г®Г¤Г®Г«Г¦ГЁГІГј" Font-Size="10pt" />
                     </td>
                 </tr>
             </table>
