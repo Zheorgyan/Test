@@ -1,0 +1,67 @@
+﻿@model KarmanDetails
+
+
+
+<div class="modal-content">
+    <div class="modal-header">
+        <h4>Данные о сортаменте кармана</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    </div>
+    <div class="modal-body">
+        <table class="table table-custom">
+            <thead>
+                <tr>
+                    <th>Диаметр</th>
+                    <th>Толщина</th>
+                    <th>Марка стали</th>
+                    <th>НТД</th>
+                    <th>Количество труб</th>
+                    <th>Номера труб</th>
+                </tr>
+            </thead>
+            <tbody>
+
+                @foreach (var element in Model.Karmans)
+                {
+                @*
+                <a href="@Url.Action(" GetPipeNumbers", "Home" ,new {@_MnemoName=element.MNEMO_NAME, @_StackName=element.STACK_NAME, @_PocketNum=element.POCKET_NUM})">
+                    *@
+                <tr>
+                    @*@element.DIAMETER x @element.THICKNESS @element.STAL @element.GOST @element.COUNT_PIPES*@
+                    <td>@Html.DisplayFor(model => element.DIAMETER)</td>
+                    <td>@Html.DisplayFor(model => element.THICKNESS)</td>
+                    <td>@Html.DisplayFor(model => element.STAL)</td>
+                    <td>@Html.DisplayFor(model => element.GOST)</td>
+                    <td>@Html.DisplayFor(model => element.COUNT_PIPES)</td>
+                    <td>
+                        <div data-plain-mnemo="@Model.MNEMO_NAME"
+                             data-plain-stack="@element.STACK_NAME"
+                             data-plain-pocket="@element.POCKET_NUM"
+                             data-plain-diam="@element.DIAMETER"
+                             data-plain-thick="@element.THICKNESS"
+                             data-plain-stal="@element.STAL"
+                             data-plain-gost="@element.GOST"
+                             data-toggle="popover">
+                            @Html.ActionLink("Номера труб", "GetPipeNumbers", new
+                            {
+                            _stackName = @element.STACK_NAME,
+                            _pocketNum = @element.POCKET_NUM,
+                            _mnemoName = @element.MNEMO_NAME,
+                            _diameter = @element.DIAMETER,
+                            _thickness = @element.THICKNESS,
+                            _stal = @element.STAL,
+                            _gost = @element.GOST
+                            }, new
+                            {
+                            @class = "sortItem"
+                            })
+                        </div>
+                    </td>
+                </tr>
+                @*</a>*@
+
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
