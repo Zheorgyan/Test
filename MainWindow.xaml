@@ -1,0 +1,44 @@
+﻿<Window x:Class="WpfApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:core="clr-namespace:WpfApp.Core"
+        xmlns:local="clr-namespace:WpfApp"
+        xmlns:telerik="http://schemas.telerik.com/2008/xaml/presentation"
+        mc:Ignorable="d"
+        Icon="Icons/icon.ico"
+        Height="500" Width="700" WindowStartupLocation="CenterScreen" ResizeMode="CanResizeWithGrip"
+        Title="Автовокзал"
+        Loaded="Window_Loaded">
+    <Grid Margin="4">
+        <Grid.Resources >
+            <Style TargetType="telerik:RadButton" >
+                <Setter Property="Margin" Value="2,2,2,2" />
+                <Setter Property="FontSize" Value="18" />
+            </Style>
+        </Grid.Resources>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="30" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <telerik:RadButton Grid.Row="0" Grid.Column="0" Click="Button_Click_2">Автобусы</telerik:RadButton>
+        <telerik:RadButton Grid.Row="0" Grid.Column="1" Click="Button_Click_6">Водители</telerik:RadButton>
+        <telerik:RadButton Grid.Row="2" Grid.Column="0" Click="Button_Click_1">Населенные пункты</telerik:RadButton>
+        <telerik:RadButton Grid.Row="1" Grid.Column="1" Click="Button_Click_3">Кассиры</telerik:RadButton>
+        <telerik:RadButton Grid.Row="2" Grid.Column="1" Click="Button_Click_4">Пассажиры</telerik:RadButton>
+        <telerik:RadButton Grid.Row="1" Grid.Column="0" Click="Button_Click">Маршруты</telerik:RadButton>
+        <telerik:RadButton Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Click="Button_Click_5">Продажа билетов</telerik:RadButton>
+        <telerik:Label Grid.Row="4" Grid.ColumnSpan="2" FontSize="16" HorizontalContentAlignment="Center">Отчеты:</telerik:Label>
+        <telerik:RadButton Grid.Row="5" Grid.Column="0" Click="RadButton_Click">Продажа билетов за период</telerik:RadButton>
+        <telerik:RadButton Grid.Row="5" Grid.Column="1" Click="RadButton_Click_1">Загрузка рейсов за период</telerik:RadButton>
+    </Grid>
+</Window>

@@ -1,0 +1,2 @@
+Scaffold-DbContext "User=admin;password=123;Role=ROLE_ADMIN;DataSource=127.0.0.1;Database=database;dialect=3" EntityFrameworkCore.FirebirdSQL -o Models
+			

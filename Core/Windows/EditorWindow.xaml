@@ -1,0 +1,26 @@
+﻿<Window x:Class="WpfApp.Core.EditorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:telerik="http://schemas.telerik.com/2008/xaml/presentation"
+        mc:Ignorable="d"
+        ResizeMode="CanResizeWithGrip" WindowStartupLocation="Manual"
+        SizeToContent="Height"
+        Title="ItemWindow" Height="450" Width="800" MinWidth="350">
+    <Grid Name="layoutGrid" Margin="8">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition x:Name="layoutGridLabelColumn" Width="80" />
+            <ColumnDefinition x:Name="layoutGridControlColumn" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition x:Name="layoutGridBottomRow" Height="55" MinHeight="55" />
+        </Grid.RowDefinitions>
+        <StackPanel x:Name="buttonsPanel" Grid.Row="0" Grid.ColumnSpan="2" Orientation="Horizontal"
+                    VerticalAlignment="Bottom"
+                    HorizontalAlignment="Right" Margin="8 8 8 8">
+            <telerik:RadButton x:Name="btnOk" IsDefault="True" Click="btnOk_Click" Width="80" Padding="4" Margin="0 0 4 0">ОК</telerik:RadButton>
+            <telerik:RadButton x:Name="btnCancel" IsCancel="True" Click="btnCancel_Click" Width="80" Padding="4">Отмена</telerik:RadButton>
+        </StackPanel>
+    </Grid>
+</Window>
